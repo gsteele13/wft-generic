@@ -1,14 +1,34 @@
 import serial
 from time import sleep
 
-class WFT:
+# +
+class setting_dict(dict):
+    def __init__(self, wft):
+        self.wft = wft
+    def update_key(self,key,value): # used only when fetching
+        super().__setitem__(key, value)
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value) 
+        fmt = self.wft.command_fmt[key]
+        char = self.wft.command_char[key]
+        if fmt == "":
+            self.write(char)
+        else:
+            cmd = ("%s" + fmt) % (char, value)
+            self.wft.write(cmd)
+        self.wft.parse_settings()
+    def __getitem__(self, key):
+        return super().__getitem__(key)
+        
+class WFT:        
     def __init__(self, port, timeout=0.01):
         self.s = serial.Serial(port, timeout=timeout)
-        self.value = {}
+        self.setting = setting_dict(self)
         self.command_char = {}
         self.command_fmt = {}
         self.parse_settings()
     def write(self, msg):
+        print("sending command", msg)
         self.s.write(msg.encode('ascii', 'ignore'))
     def read(self):
         # No handshaking or msg term, so just read until timeout (10 ms)...
@@ -22,6 +42,17 @@ class WFT:
         # (but a 50 ms sleep is a safe solution...)
         sleep(0.05) 
         return self.read()
+    def help(self):
+        for k in self.setting.keys():
+            s = self.command_char[k]
+            if self.command_fmt[k] != "":
+                s += "  " + self.command_fmt[k]
+            else:
+                s += "    "   
+            s += "  " + k
+            if self.command_fmt[k] != "":
+                s += "  (" + (self.command_fmt[k] % self.setting[k]) +")"
+            print(s)
     def parse_settings(self):
         s = self.query("?")
         lines = s.splitlines()[:-2] # always sends a final blank line? 
@@ -50,15 +81,16 @@ class WFT:
             try: 
                 float(val_string) # this will fail if it is not a float 
                 if "." in val_string: # float
-                    self.value[key] = float(val_string)
-                    self.command_fmt = "%f"
+                    self.setting.update_key(key, float(val_string))
+                    self.command_fmt[key] = "%f"
                 else: # int
-                    self.value[key] = int(val_string)
-                    self.command_fmt = "%d"
+                    self.setting.update_key(key, int(val_string))
+                    self.command_fmt[key] = "%d"
             except ValueError:
                 # for commands of type (C), this will be empty
-                self.value[key] = self.query(l[0]) 
-                self.command_fmt = ""
+                self.setting.update_key(key, val_string)
+                self.command_fmt[key] = ""
+# -
 
 # # Basic test
 # import glob
@@ -67,7 +99,12 @@ class WFT:
 #
 # port = "/dev/tty.usbmodem123451"
 # wft = WFT(port)
-# wft.read()
+
+# wft.help()
+
+# wft.setting["Frequency MHz"] = 1002
+
+# wft.help()
 
 # # Update github folder
 #
