@@ -21,15 +21,18 @@ class setting_dict(dict):
         return super().__getitem__(key)
         
 class WFT:        
-    def __init__(self, port, timeout=0.01):
+    def __init__(self, port, timeout=0.01, debug=False):
+        self.debug = debug
         self.s = serial.Serial(port, timeout=timeout)
         self.setting = setting_dict(self)
         self.command_char = {}
         self.command_fmt = {}
         self.parse_settings()
     def write(self, msg):
-        print("sending command", msg)
+        if self.debug:
+            print("sending command", msg)
         self.s.write(msg.encode('ascii', 'ignore'))
+        sleep(0.05) # sometimes getting errors...
     def read(self):
         # No handshaking or msg term, so just read until timeout (10 ms)...
         # smarter in the future: keep reading in blocks until we reach a timeout,
@@ -43,6 +46,7 @@ class WFT:
         sleep(0.05) 
         return self.read()
     def help(self):
+        self.parse_settings()
         for k in self.setting.keys():
             s = self.command_char[k]
             if self.command_fmt[k] != "":
@@ -102,7 +106,7 @@ class WFT:
 
 # wft.help()
 
-# wft.setting["Frequency MHz"] = 1002
+# wft.parse_settings()
 
 # wft.help()
 
