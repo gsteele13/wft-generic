@@ -38,6 +38,14 @@ class WFT:
         # smarter in the future: keep reading in blocks until we reach a timeout,
         # then we can also maybe make the timeout smaller
         return self.s.read(10000).decode('utf-8')
+    def query_EOM(self, msg):
+        self.write(msg)
+        sleep(0.05)
+        msg = ''
+        msg += self.read()
+        while msg[-5:-2] != "EOM":
+            msg += self.read()
+        return msg
     def query(self,msg):
         self.write(msg)
         # some commands, in particular firmware and model, take some time...
