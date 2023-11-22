@@ -104,12 +104,13 @@ class WFT:
                 self.command_fmt[key] = ""
 # -
 
-# # Basic test
+# # Basic tests
+#
 # import glob
 # devs = glob.glob("/dev/tty.usb*")
 # devs
-#
-# port = "/dev/tty.usbmodem123451"
+
+# port = "/dev/tty.usbmodem206C34714E561"
 # wft = WFT(port)
 
 # wft.help()
@@ -117,6 +118,12 @@ class WFT:
 # wft.parse_settings()
 
 # wft.help()
+
+# wft.query("f?")
+
+# wft.write("f10.002")
+
+# wft.query("f?")
 
 # # Update github folder
 #
