@@ -38,6 +38,7 @@ First you need to find the WFT device. Probably windows explorer / NImax or some
 On mac (and probably linux), the WFT devices show up as a device in /dev/tty.usbXXXXXXX. I usually figure out which one by doing this (usually I have only one usb TTY device on my macbook):
 
 ```
+import wft
 import glob
 devs = glob.glob("/dev/tty.usb*")
 devs
@@ -47,13 +48,13 @@ I can then create a WFT instance using:
 
 ```
 port = "/dev/tty.usbmodem206C34714E561"
-wft = WFT(port)
+wft1 = wft.WFT(port)
 ```
 
 And then this function is useful:
 
 ```
-wft.help()
+wft1.help()
 ```
 
 on my SynthHD gives:
@@ -113,13 +114,13 @@ e      Write all settings to eeprom
 And from there I can do things like set  frequencies:
 
 ```
-wft.write("f10.002")
+wft1.write("f10.002")
 ```
 
 and check their values:
 
 ```
-wft.query("f?")
+wft1.query("f?")
 ```
 
 That's the basics!
